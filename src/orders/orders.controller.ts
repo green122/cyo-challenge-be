@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { OrderDto } from 'src/dtos/order.dto';
-import { OrdersService } from '../common/services/db.service';
+import { DBService } from '../common/services/db.service';
 
 @Controller('orders')
 export class OrdersController {
-  constructor(private ordersService: OrdersService) {}
+  constructor(private ordersService: DBService) {}
 
   @Get()
   async findAll() {
@@ -12,13 +13,27 @@ export class OrdersController {
   }
 
   @Get(':orderId')
-  async findById(@Param('orderId') orderId: string) {
+  async findById(@Param('orderId') orderId: string, @Req() req: Request) {
+    console.log(req.uid);
     return await this.ordersService.getDocumentById('orders', orderId);
   }
 
   @Post()
   async create(@Body() dto: OrderDto) {
     const result = await this.ordersService.createDocument('orders', dto);
+    return result;
+  }
+
+  @Put(':orderId')
+  async update(
+    @Body() dto: Partial<OrderDto>,
+    @Param('orderId') orderId: string,
+  ) {
+    const result = await this.ordersService.updateDocumentById(
+      'orders',
+      orderId,
+      dto,
+    );
     return result;
   }
 }

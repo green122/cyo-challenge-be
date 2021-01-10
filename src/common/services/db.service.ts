@@ -2,13 +2,16 @@ import { Injectable } from '@nestjs/common';
 import admin, { ServiceAccount } from 'firebase-admin';
 import serviceAccount from '../../../serviceAccountKey.json';
 
-interface IQuery {
-  id: string;
+interface ICommonQuery {
   [key: string]: unknown;
 }
+interface IQuery extends ICommonQuery {
+  id: string;
+}
 @Injectable()
-export class OrdersService {
+export class DBService {
   private db: FirebaseFirestore.Firestore;
+  private auth: admin.auth.Auth;
 
   constructor() {
     this.initDb();
@@ -21,6 +24,7 @@ export class OrdersService {
     });
 
     this.db = admin.firestore();
+    this.auth = admin.auth();
   }
 
   public async createDocument<T extends unknown>(collection: string, dto: T) {
@@ -34,6 +38,18 @@ export class OrdersService {
     return queryResult.data();
   }
 
+  public async updateDocumentById<T extends ICommonQuery>(
+    collection: string,
+    id: string,
+    updateData: T,
+  ) {
+    const updateResult = await this.db
+      .collection(collection)
+      .doc(id)
+      .update(updateData);
+    return updateResult;
+  }
+
   public async getAllDocuments<T extends IQuery>(
     collection: string,
   ): Promise<T[]> {
@@ -45,5 +61,14 @@ export class OrdersService {
       result.push(data);
     });
     return result;
+  }
+
+  public async verifyTokenAndGetUID(token: string): Promise<string> {
+    try {
+      const decodedToken = await this.auth.verifyIdToken(token);
+      return decodedToken.uid;
+    } catch (error) {
+      return '';
+    }
   }
 }
