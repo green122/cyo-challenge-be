@@ -1,5 +1,12 @@
-import { Body, Controller, Get, Param, Post, Put, Req } from '@nestjs/common';
-import { Request } from 'express';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { OrderDto } from 'src/dtos/order.dto';
 import { DBService } from '../common/services/db.service';
 
@@ -13,15 +20,18 @@ export class OrdersController {
   }
 
   @Get(':orderId')
-  async findById(@Param('orderId') orderId: string, @Req() req: Request) {
-    console.log(req.uid);
-    return await this.ordersService.getDocumentById('orders', orderId);
+  async findById(@Param('orderId') orderId: string) {
+    const result = await this.ordersService.getDocumentById('orders', orderId);
+    if (!result) {
+      throw new NotFoundException(`order with id ${orderId} not found`);
+    }
+    return result;
   }
 
   @Post()
   async create(@Body() dto: OrderDto) {
     const result = await this.ordersService.createDocument('orders', dto);
-    return result;
+    return { id: result };
   }
 
   @Put(':orderId')

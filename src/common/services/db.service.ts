@@ -28,13 +28,16 @@ export class DBService {
   }
 
   public async createDocument<T extends unknown>(collection: string, dto: T) {
+    // TODO: handle errors
     const result = await this.db.collection(collection).add(dto);
-    return result;
+    return result.id;
   }
 
   public async getDocumentById(collection: string, id: string) {
     const queryResult = await this.db.collection(collection).doc(id).get();
-
+    if (!queryResult.exists) {
+      return null;
+    }
     return queryResult.data();
   }
 
@@ -47,6 +50,7 @@ export class DBService {
       .collection(collection)
       .doc(id)
       .update(updateData);
+
     return updateResult;
   }
 
@@ -64,11 +68,7 @@ export class DBService {
   }
 
   public async verifyTokenAndGetUID(token: string): Promise<string> {
-    try {
-      const decodedToken = await this.auth.verifyIdToken(token);
-      return decodedToken.uid;
-    } catch (error) {
-      return '';
-    }
+    const decodedToken = await this.auth.verifyIdToken(token);
+    return decodedToken.uid;
   }
 }

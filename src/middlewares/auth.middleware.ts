@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, NestMiddleware } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NestMiddleware,
+} from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { DBService } from 'src/common/services/db.service';
 
@@ -12,7 +17,13 @@ export class AuthMiddleware implements NestMiddleware {
       throw new ForbiddenException();
     }
 
-    const uid = await this.db.verifyTokenAndGetUID(token);
+    let uid = '';
+
+    try {
+      uid = await this.db.verifyTokenAndGetUID(token);
+    } catch (error) {
+      throw new InternalServerErrorException('Something bad happened', error);
+    }
 
     if (!uid) {
       throw new ForbiddenException();
