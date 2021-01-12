@@ -12,16 +12,17 @@ import { DBService } from '../common/services/db.service';
 
 @Controller('orders')
 export class OrdersController {
-  constructor(private ordersService: DBService) {}
+  constructor(private dbService: DBService) {}
 
   @Get()
   async findAll() {
-    return await this.ordersService.getAllDocuments<OrderDto>('orders');
+    const result = await this.dbService.getAllDocuments<OrderDto>('orders');
+    return result;
   }
 
   @Get(':orderId')
   async findById(@Param('orderId') orderId: string) {
-    const result = await this.ordersService.getDocumentById('orders', orderId);
+    const result = await this.dbService.getDocumentById('orders', orderId);
     if (!result) {
       throw new NotFoundException(`order with id ${orderId} not found`);
     }
@@ -30,7 +31,7 @@ export class OrdersController {
 
   @Post()
   async create(@Body() dto: OrderDto) {
-    const result = await this.ordersService.createDocument('orders', dto);
+    const result = await this.dbService.createDocument('orders', dto);
     return { id: result };
   }
 
@@ -39,7 +40,7 @@ export class OrdersController {
     @Body() dto: Partial<OrderDto>,
     @Param('orderId') orderId: string,
   ) {
-    const result = await this.ordersService.updateDocumentById(
+    const result = await this.dbService.updateDocumentById(
       'orders',
       orderId,
       dto,
