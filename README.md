@@ -10,6 +10,10 @@ $ npm install
 
 `firestore serviceAccountKey.json should be added to the root directory of the project`
 
+### Note
+
+`/POST orders works under jwt protection as other routes. You should add jwt token as 'authorization' header. UID for the new order is taken from jwt`
+
 ## Running the app
 
 ```bash
