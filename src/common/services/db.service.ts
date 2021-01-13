@@ -46,12 +46,20 @@ export class DBService {
     id: string,
     updateData: T,
   ) {
-    const updateResult = await this.db
-      .collection(collection)
-      .doc(id)
-      .update(updateData);
-
-    return updateResult;
+    try {
+      const updateResult = await this.db
+        .collection(collection)
+        .doc(id)
+        .update(updateData);
+      return updateResult;
+    } catch (error) {
+      // TODO: Analyze errors
+      console.log(error.code);
+      if (error.code === 5) {
+        return null;
+      }
+      throw new Error();
+    }
   }
 
   public async getAllDocuments<T extends IQuery>(
